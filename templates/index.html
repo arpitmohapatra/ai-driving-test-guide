@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Driving Test Guide</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 2rem;
+        }
+        .header-container {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .chat-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .chat-box {
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #f8f9fa;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .user-message {
+            background-color: #e3f2fd;
+            margin-left: 20%;
+            margin-right: 5px;
+        }
+        .bot-message {
+            background-color: #f1f1f1;
+            margin-right: 20%;
+            margin-left: 5px;
+        }
+        .input-container {
+            display: flex;
+        }
+        #question-input {
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+        .status-message {
+            text-align: center;
+            margin-top: 1rem;
+            color: #6c757d;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 15px 0;
+        }
+        .spinner-border {
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-container">
+            <h1>AI Driving Test Guide</h1>
+            <p class="lead">Ask questions about driving tests and regulations</p>
+        </div>
+        
+        <div class="chat-container">
+            <div class="chat-box" id="chat-box">
+                <div class="message bot-message">
+                    Welcome to the AI Driving Test Guide! Ask me any questions about driving tests, regulations, or driving tips.
+                </div>
+            </div>
+            
+            <div class="loading" id="loading">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <span class="ms-2">Thinking...</span>
+            </div>
+            
+            <div class="input-container">
+                <input type="text" class="form-control" id="question-input" 
+                       placeholder="Ask a question about driving tests..." 
+                       autocomplete="off">
+                <button class="btn btn-primary" id="ask-button">Ask</button>
+            </div>
+            
+            <div class="status-message" id="status-message"></div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatBox = document.getElementById('chat-box');
+            const questionInput = document.getElementById('question-input');
+            const askButton = document.getElementById('ask-button');
+            const loadingIndicator = document.getElementById('loading');
+            const statusMessage = document.getElementById('status-message');
+            
+            // Check status of vector store
+            fetch('/status')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.has_vectors) {
+                        statusMessage.textContent = 'No document data loaded. Please run the ingest.py script first.';
+                        statusMessage.style.color = '#dc3545';
+                        questionInput.disabled = true;
+                        askButton.disabled = true;
+                    }
+                })
+                .catch(error => {
+                    statusMessage.textContent = 'Error connecting to server: ' + error;
+                    statusMessage.style.color = '#dc3545';
+                });
+            
+            function askQuestion() {
+                const question = questionInput.value.trim();
+                if (!question) return;
+                
+                // Add user message to chat
+                const userMsgDiv = document.createElement('div');
+                userMsgDiv.className = 'message user-message';
+                userMsgDiv.textContent = question;
+                chatBox.appendChild(userMsgDiv);
+                
+                // Clear input and scroll to bottom
+                questionInput.value = '';
+                chatBox.scrollTop = chatBox.scrollHeight;
+                
+                // Show loading indicator
+                loadingIndicator.style.display = 'block';
+                
+                // Send question to server
+                fetch('/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ question: question })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Hide loading indicator
+                    loadingIndicator.style.display = 'none';
+                    
+                    // Add bot response to chat
+                    const botMsgDiv = document.createElement('div');
+                    botMsgDiv.className = 'message bot-message';
+                    botMsgDiv.textContent = data.answer;
+                    chatBox.appendChild(botMsgDiv);
+                    
+                    // Scroll to bottom
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                })
+                .catch(error => {
+                    // Hide loading indicator
+                    loadingIndicator.style.display = 'none';
+                    
+                    // Add error message to chat
+                    const errorMsgDiv = document.createElement('div');
+                    errorMsgDiv.className = 'message bot-message';
+                    errorMsgDiv.textContent = 'Error: ' + error;
+                    errorMsgDiv.style.color = '#dc3545';
+                    chatBox.appendChild(errorMsgDiv);
+                    
+                    // Scroll to bottom
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                });
+            }
+            
+            // Event listeners
+            askButton.addEventListener('click', askQuestion);
+            questionInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    askQuestion();
+                }
+            });
+        });
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

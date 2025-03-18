@@ -1,80 +1,119 @@
 # AI Driving Test Guide
 
-A RAG (Retrieval-Augmented Generation) chatbot application that answers questions about driving tests based on PDF knowledge.
+An AI-powered application to help users prepare for driving tests using RAG (Retrieval Augmented Generation) technology. This application allows users to upload driving test guides and regulations in PDF format and then ask questions about them.
 
 ## Features
 
-- PDF document ingestion and processing
-- Vector database for efficient retrieval
-- AI-powered question answering using RAG technique
-- Simple web interface for asking questions
+- Upload driving test manuals and regulations as PDF files
+- Process and index document content using vector embeddings
+- Ask natural language questions about driving tests and regulations
+- Get AI-generated answers based on the uploaded documents
+- Web interface for easy interaction
+
+## Technology Stack
+
+- **Backend**: Python, Flask
+- **AI/ML**: LangChain, OpenAI API, FAISS vector database
+- **Frontend**: HTML, CSS, JavaScript, Bootstrap
+- **Document Processing**: PyPDF2
+
+## Prerequisites
+
+- Python 3.8 or higher
+- OpenAI API key
 
 ## Installation
 
-1. Clone this repository:
-```bash
-git clone https://github.com/arpitmohapatra/ai-driving-test-guide.git
-cd ai-driving-test-guide
-```
+1. Clone the repository:
+   ```
+   git clone https://github.com/arpitmohapatra/ai-driving-test-guide.git
+   cd ai-driving-test-guide
+   ```
 
-2. Create a virtual environment and install dependencies:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
-```
+2. Create and activate a virtual environment:
+   ```
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
 
-3. Create a `.env` file with your OpenAI API key:
-```
-OPENAI_API_KEY=your_api_key_here
-```
+3. Install the required packages:
+   ```
+   pip install -r requirements.txt
+   ```
+
+4. Create a `.env` file with your OpenAI API key:
+   ```
+   cp .env.example .env
+   ```
+   Edit the `.env` file and add your OpenAI API key.
 
 ## Usage
 
-1. Place your driving test PDF document in the `data` folder.
+### 1. Add Documents
 
-2. Ingest the PDF into the vector database:
-```bash
-python ingest.py --file data/your_driving_manual.pdf
+Place your driving test guide PDF documents in the `data/` directory:
+```
+mkdir -p data
+# Copy your PDF files to the data directory
 ```
 
-3. Run the application:
-```bash
+### 2. Ingest Documents
+
+Process and index the documents:
+```
+python ingest.py
+```
+
+### 3. Run the Web Application
+
+Start the Flask web server:
+```
 python app.py
 ```
 
-4. Open your browser and navigate to `http://localhost:5000`
+Access the application in your web browser at `http://localhost:5000`.
+
+### 4. Ask Questions
+
+- Use the web interface to ask questions about driving tests and regulations
+- The AI will retrieve relevant information from your documents and generate answers
 
 ## Project Structure
 
 ```
-.
-├── app.py              # Main Flask application
-├── ingest.py           # Script for ingesting PDFs into the vector database
-├── requirements.txt    # Project dependencies
-├── .env                # Environment variables (create this file, not tracked in git)
-├── .gitignore          # Gitignore file
-├── data/               # Folder for storing PDF documents
-├── static/             # Static files for the web interface
-│   ├── css/
-│   └── js/
-├── templates/          # HTML templates
-└── utils/              # Utility functions
-    ├── __init__.py
-    ├── embedding.py    # Functions for creating and managing embeddings
-    ├── pdf_loader.py   # Functions for loading and processing PDFs
-    └── rag.py          # RAG implementation for question answering
+ai-driving-test-guide/
+├── app.py                 # Main Flask application
+├── ingest.py              # Document ingestion script
+├── requirements.txt       # Python dependencies
+├── .env.example           # Environment variables template
+├── .gitignore             # Git ignore file
+├── README.md              # Project documentation
+├── data/                  # Directory for PDF documents
+├── templates/             # HTML templates
+│   └── index.html         # Main web interface
+├── utils/                 # Utility modules
+│   └── rag.py             # RAG implementation
+└── vector_store/          # FAISS vector database (generated)
 ```
 
-## Technologies Used
+## Customization
 
-- Python
-- OpenAI API
-- LangChain
-- FAISS for vector storage
-- PyPDF2 for PDF processing
-- Flask for the web interface
+- Adjust chunk size and overlap in `utils/rag.py` for different document types
+- Modify the UI in `templates/index.html` to change the look and feel
+- Add additional routes in `app.py` for more functionality
+
+## Troubleshooting
+
+- If you encounter an error related to the OpenAI API key, make sure it's correctly set in your `.env` file
+- If document ingestion fails, check that your PDF files are in the correct format and readable
+- For vector storage issues, try deleting the `vector_store` directory and re-running the ingestion process
 
 ## License
 
-MIT
+This project is open source and available under the MIT License.
+
+## Acknowledgements
+
+- OpenAI for providing the API for embeddings and completions
+- LangChain for the RAG framework
+- FAISS for efficient vector similarity search
